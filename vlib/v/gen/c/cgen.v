@@ -4954,17 +4954,16 @@ fn (mut g Gen) const_decl_init_later(mod string, name string, val string, typ as
 			g.inits[mod].writeln('\t$cname = $val;')
 		}
 	}
-	if g.is_autofree {
-		sym := g.table.get_type_symbol(typ)
-		if styp.starts_with('Array_') {
-			g.cleanups[mod].writeln('\tarray_free(&$cname);')
-		} else if styp == 'string' {
-			g.cleanups[mod].writeln('\tstring_free(&$cname);')
-		} else if sym.kind == .map {
-			g.cleanups[mod].writeln('\tmap_free(&$cname);')
-		} else if styp == 'IError' {
-			g.cleanups[mod].writeln('\tIError_free(&$cname);')
-		}
+
+	sym := g.table.get_type_symbol(typ)
+	if styp.starts_with('Array_') {
+		g.cleanups[mod].writeln('\tarray_free(&$cname);')
+	} else if styp == 'string' {
+		g.cleanups[mod].writeln('\tstring_free(&$cname);')
+	} else if sym.kind == .map {
+		g.cleanups[mod].writeln('\tmap_free(&$cname);')
+	} else if styp == 'IError' {
+		g.cleanups[mod].writeln('\tIError_free(&$cname);')
 	}
 }
 
@@ -5291,16 +5290,16 @@ fn (mut g Gen) write_init_function() {
 	//
 	fn_vcleanup_start_pos := g.out.len
 	g.writeln('void _vcleanup() {')
-	if g.is_autofree {
-		// g.writeln('puts("cleaning up...");')
-		reversed_table_modules := g.table.modules.reverse()
-		for mod_name in reversed_table_modules {
-			g.writeln('\t// Cleanups for module $mod_name :')
-			g.writeln(g.cleanups[mod_name].str())
-		}
-		// g.writeln('\tfree(g_str_buf);')
-		g.writeln('\tarray_free(&as_cast_type_indexes);')
+
+	// g.writeln('puts("cleaning up...");')
+	reversed_table_modules := g.table.modules.reverse()
+	for mod_name in reversed_table_modules {
+		g.writeln('\t// Cleanups for module $mod_name :')
+		g.writeln(g.cleanups[mod_name].str())
 	}
+	// g.writeln('\tfree(g_str_buf);')
+	g.writeln('\tarray_free(&as_cast_type_indexes);')
+
 	g.writeln('}')
 	if g.pref.printfn_list.len > 0 && '_vcleanup' in g.pref.printfn_list {
 		println(g.out.after(fn_vcleanup_start_pos))

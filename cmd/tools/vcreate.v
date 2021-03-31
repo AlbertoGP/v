@@ -7,6 +7,7 @@ module main
 // makes the program structure in a _sub_ directory. Besides that, the
 // functionality is essentially the same.
 import os
+import v.pref
 
 struct Create {
 mut:
@@ -50,8 +51,14 @@ fn vmod_content(c Create) string {
 }
 
 fn main_content() string {
+	mut prefs := pref.new_preferences()
 	return [
 		'module main\n',
+		if prefs.autofree {
+			''
+		} else {
+			'[manualfree]'
+		},
 		'fn main() {',
 		"	println('Hello World!')",
 		'}',
